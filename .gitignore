@@ -1,0 +1,5 @@
+test_align.png
+__pycache__
+temp_data
+*.pth
+weights
