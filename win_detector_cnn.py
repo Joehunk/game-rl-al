@@ -7,7 +7,8 @@ from torchvision.io import read_image
 import os
 import pytorch_device
 
-class CustomImageDataset(Dataset):
+
+class WinDetectorImageDataset(Dataset):
     def __init__(self, img_dirs_with_labels, transform=None, repeats=10):
         self.img_labels = []
         self.transform = transform
@@ -57,12 +58,12 @@ def train(save_weights_path: str):
 
     # Define directories with labels
     img_dirs_with_labels = [
-        ("./temp_data/success_detect/yes", 1),
-        ("./temp_data/success_detect/no", 0),
+        ("./temp_data/success_detect/train/yes", 1),
+        ("./temp_data/success_detect/train/no", 0),
     ]
 
     # Create dataset
-    dataset = CustomImageDataset(
+    dataset = WinDetectorImageDataset(
         img_dirs_with_labels=img_dirs_with_labels, transform=transform
     )
 
@@ -77,6 +78,7 @@ def train(save_weights_path: str):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
 
     for epoch in range(40):
+        running_loss = 0.0
         for inputs, labels in data_loader:
             inputs = inputs.to(pytorch_device.device, dtype=torch.float32)
             labels = labels.unsqueeze(1).to(pytorch_device.device, dtype=torch.float32)
@@ -91,8 +93,9 @@ def train(save_weights_path: str):
             loss.backward()
 
             optimizer.step()
+            running_loss += loss.item()
 
-        print(f"Epoch {epoch+1}, Loss: {loss.item()}")
+        print(f"Epoch {epoch+1}, Loss: {running_loss/len(data_loader)}")
 
     print(f"Saving weights to {save_weights_path}")
     torch.save(model.state_dict(), save_weights_path)
