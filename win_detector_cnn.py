@@ -2,20 +2,23 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms, datasets
+from torchvision import transforms
 from torchvision.io import read_image
 import os
 import pytorch_device
 
-
 class CustomImageDataset(Dataset):
-    def __init__(self, img_dirs_with_labels, transform=None):
+    def __init__(self, img_dirs_with_labels, transform=None, repeats=10):
         self.img_labels = []
         self.transform = transform
+        self.repeats = repeats
         # img_dirs_with_labels is a list of tuples (directory, label)
         for img_dir, label in img_dirs_with_labels:
             for img_name in os.listdir(img_dir):
-                self.img_labels.append((os.path.join(img_dir, img_name), label))
+                for _ in range(
+                    repeats
+                ):  # Assume each image will be augmented into 'repeats' number of crops
+                    self.img_labels.append((os.path.join(img_dir, img_name), label))
 
     def __len__(self):
         return len(self.img_labels)
@@ -48,7 +51,9 @@ class SimpleCNNClassifier(nn.Module):
 
 
 def train(save_weights_path: str):
-    transform = transforms.Resize((400, 400))  
+    transform = transforms.Compose(
+        [transforms.Resize((440, 440)), transforms.RandomCrop(size=(400, 400))]
+    )
 
     # Define directories with labels
     img_dirs_with_labels = [
