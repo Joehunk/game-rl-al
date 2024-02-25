@@ -31,31 +31,23 @@ class CustomImageDataset(Dataset):
 class SimpleCNNClassifier(nn.Module):
     def __init__(self):
         super(SimpleCNNClassifier, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=1, padding=2)
+        self.conv1 = nn.Conv2d(3, 8, kernel_size=5, stride=1, padding=2)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=1, padding=2)
-        # Adjust the fc1 layer to match the correct flattened size
-        self.fc1 = nn.Linear(32 * 100 * 100, 256)  # Adjusted to 32*100*100
-        self.fc2 = nn.Linear(256, 1)
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=5, stride=1, padding=2)
+        self.fc1 = nn.Linear(16 * 50 * 50, 128)
+        self.fc2 = nn.Linear(128, 1)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 32 * 100 * 100)  # Correctly adjusted flatten size
+        x = self.pool(x)  # Additional pooling to reduce dimensions
+        x = x.view(-1, 16 * 50 * 50)  # Adjust for the additional pooling layer
         x = F.relu(self.fc1(x))
         x = torch.sigmoid(self.fc2(x))  # Sigmoid for binary classification
         return x
 
 
 def train(save_weights_path: str):
-    # Define transformations
-    # transform = transforms.Compose(
-    #     [
-    #         lambda x: x.half() / 255,
-    #         transforms.Resize((400, 400))  
-    #     ]
-    # )
-
     transform = transforms.Resize((400, 400))  
 
     # Define directories with labels
@@ -79,7 +71,7 @@ def train(save_weights_path: str):
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
 
-    for epoch in range(20):
+    for epoch in range(40):
         for inputs, labels in data_loader:
             inputs = inputs.to(pytorch_device.device, dtype=torch.float32)
             labels = labels.unsqueeze(1).to(pytorch_device.device, dtype=torch.float32)
@@ -105,5 +97,5 @@ if __name__ == "__main__":
     import model_utils
 
     model = SimpleCNNClassifier()
-    model = model.to(pytorch_device.device, dtype=torch.float16)
+    model = model.to(pytorch_device.device, dtype=torch.float32)
     print(f"Model param size {model_utils.get_model_size_mb(model):.2f} MB")
