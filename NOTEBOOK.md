@@ -15,3 +15,13 @@ win_and_angle_detector was the final architecture I got to work. Some issues I e
 I stored the good weights for the model as of this commit here:
 https://drive.google.com/file/d/1_ImXpJ6LuH2Rd3xZlD8tXuIJKdDESNcF/view?usp=sharing
 
+## Image Format
+I am currently having issues with the format the screen grab provides images in. I am following examples
+[here](https://python-mss.readthedocs.io/examples.html) for converting BGRA to RGB. However the model
+is giving me shit values.
+
+I even tried opening one of the training data in an image viewer, and aligning it with the screen grab region.
+This still yielded junk from the model. However if I instead scrteen grab the exact same region to a PNG
+(using the test_alignment_grab function in scum_game), and then use torchvision.io.read_image on that,
+I get great results from the model. Something bad is happening when I try to load the data direct from a
+screen grab in memory instead of through a file. Research is needed.
