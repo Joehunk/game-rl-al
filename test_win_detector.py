@@ -32,7 +32,10 @@ def analyze_frame(mss):
 
 
 def analyze_file(filename):
-    image = torchvision.io.read_image(filename).to(pytorch_device.device, dtype=torch.float32)
+    image = torchvision.io.read_image(filename).to(
+        pytorch_device.device, dtype=torch.float32
+    )
+    
     image = transforms.Resize((400, 400))(image)
     image = image.unsqueeze(0)
 
@@ -42,9 +45,10 @@ def analyze_file(filename):
 
     print(f"It is {class_output.item():.3f} {qual_output.item():.3f}")
 
+
 if __name__ == "__main__":
-    # with mss.mss() as sct:
-    #     while True:
-    #         if analyze_frame(sct):
-    #             break
-    analyze_file('test_align.png')
+    with mss.mss() as sct:
+        while True:
+            if analyze_frame(sct):
+                break
+    # analyze_file('test_align.png')
