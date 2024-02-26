@@ -5,6 +5,7 @@ import scum_game
 import torchvision.io
 from torchvision import transforms
 import mss
+import time
 
 model = win_and_angle_detector_cnn.WinAndAngleDetector().to(
     pytorch_device.device, dtype=torch.float32
@@ -35,7 +36,7 @@ def analyze_file(filename):
     image = torchvision.io.read_image(filename).to(
         pytorch_device.device, dtype=torch.float32
     )
-    
+
     image = transforms.Resize((400, 400))(image)
     image = image.unsqueeze(0)
 
@@ -48,7 +49,12 @@ def analyze_file(filename):
 
 if __name__ == "__main__":
     with mss.mss() as sct:
+        last_frame_time = time.time()
         while True:
+            current_frame_time = time.time()
+            time_delta = current_frame_time - last_frame_time
+            last_frame_time = current_frame_time
+            print(f"Time detla {time_delta:.3f}s")
             if analyze_frame(sct):
                 break
     # analyze_file('test_align.png')
